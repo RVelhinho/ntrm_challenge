@@ -27,6 +27,29 @@ describe('SearchField', () => {
     expect(onChange).toHaveBeenCalledWith('Nutrition consultation');
   });
 
+  it('keeps suggestions open while focused and closes on blur', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <SearchField
+          id="search"
+          label="Name or service"
+          value=""
+          placeholder="Search"
+          options={['Nutrition consultation']}
+          onChange={vi.fn()}
+        />
+        <button type="button">Outside</button>
+      </>,
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Outside' }));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
   it('submits on Enter after selecting a suggestion', async () => {
     const user = userEvent.setup();
     const onEnter = vi.fn();
@@ -90,5 +113,32 @@ describe('SearchField', () => {
     await user.keyboard('{Enter}');
 
     expect(onEnter).toHaveBeenCalledOnce();
+  });
+
+  it('only changes the value after selecting a suggestion', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onEnter = vi.fn();
+    render(
+      <SearchField
+        id="location"
+        label="Location"
+        value="Braga"
+        placeholder="Location"
+        options={['Braga', 'Porto']}
+        onChange={onChange}
+        onEnter={onEnter}
+        selectionOnly
+      />,
+    );
+
+    const input = screen.getByRole('combobox');
+    await user.clear(input);
+    await user.type(input, 'Unknown');
+    await user.keyboard('{Enter}');
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onEnter).not.toHaveBeenCalled();
+    expect(input).toHaveValue('Braga');
   });
 });

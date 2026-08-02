@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '../../../shared/ui/Input/Input';
 import {
@@ -18,6 +18,7 @@ type SearchFieldProps = {
   options: string[];
   onChange: (value: string) => void;
   onEnter?: () => void;
+  selectionOnly?: boolean;
   onUseCurrentLocation?: () => void;
   locationStatus?: string;
 };
@@ -30,19 +31,43 @@ export function SearchField({
   options,
   onChange,
   onEnter,
+  selectionOnly = false,
   onUseCurrentLocation,
   locationStatus,
 }: SearchFieldProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [draftValue, setDraftValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
   const searchIndex = createSearchIndex(options);
-  const filteredOptions = fuzzyOptions(searchIndex, value);
+  const inputValue = selectionOnly ? draftValue : value;
+  const filteredOptions = fuzzyOptions(searchIndex, inputValue);
+
+  useEffect(() => {
+    setDraftValue(value);
+  }, [value]);
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    onChange(event.target.value);
+    if (selectionOnly) {
+      setDraftValue(event.target.value);
+    } else {
+      onChange(event.target.value);
+    }
     setActiveIndex(-1);
     setOpen(true);
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen && inputRef.current === document.activeElement) return;
+    setOpen(nextOpen);
+  }
+
+  function selectOption(option: string) {
+    setDraftValue(option);
+    onChange(option);
+    setActiveIndex(-1);
+    setOpen(false);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -55,21 +80,25 @@ export function SearchField({
       setActiveIndex((index) => Math.max(index - 1, 0));
     } else if (event.key === 'Enter' && activeIndex >= 0) {
       event.preventDefault();
-      onChange(filteredOptions[activeIndex].value);
-      setActiveIndex(-1);
-      setOpen(false);
+      selectOption(filteredOptions[activeIndex].value);
     } else if (event.key === 'Enter') {
       event.preventDefault();
+      if (selectionOnly && !options.includes(inputValue)) {
+        setDraftValue(value);
+        setOpen(false);
+        return;
+      }
       setOpen(false);
       onEnter?.();
     } else if (event.key === 'Escape') {
+      if (selectionOnly) setDraftValue(value);
       setOpen(false);
     }
   }
 
   return (
     <div className="min-w-0">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <label className="mb-1.5 block text-xs font-medium text-white" htmlFor={id}>
           {label}
         </label>
@@ -77,10 +106,15 @@ export function SearchField({
           <div className="relative">
             <Input
               id={id}
-              value={value}
+              value={inputValue}
+              ref={inputRef}
               onFocus={() => setOpen(true)}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
+              onBlur={() => {
+                if (selectionOnly && !options.includes(inputValue)) setDraftValue(value);
+                if (inputRef.current !== document.activeElement) setOpen(false);
+              }}
               placeholder={placeholder}
               autoComplete="off"
               role="combobox"
@@ -139,9 +173,7 @@ export function SearchField({
                 onMouseDown={(event) => event.preventDefault()}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => {
-                  onChange(option.value);
-                  setActiveIndex(-1);
-                  setOpen(false);
+                  selectOption(option.value);
                 }}
               >
                 {option.value}

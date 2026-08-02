@@ -99,6 +99,7 @@ export function NutritionistSearchPage() {
             >
               <SearchField
                 id="nutritionist-query"
+                label={t('search.nameOrService')}
                 value={query}
                 onChange={setQuery}
                 onEnter={search}
@@ -107,6 +108,7 @@ export function NutritionistSearchPage() {
               />
               <SearchField
                 id="nutritionist-location"
+                label={t('search.location')}
                 value={location}
                 onChange={(value) => {
                   setLocation(value);
@@ -116,6 +118,7 @@ export function NutritionistSearchPage() {
                 onEnter={search}
                 placeholder={t('search.locationPlaceholder')}
                 options={locations}
+                selectionOnly
                 onUseCurrentLocation={useCurrentLocation}
                 locationStatus={locationStatus}
               />
