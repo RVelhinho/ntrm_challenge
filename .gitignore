@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+backend/vendor/bundle/
+
+# Build and coverage output
+dist/
+dist-ssr/
+coverage/
+.nyc_output/
+
+# Rails runtime files
+backend/log/*
+!backend/log/.keep
+backend/tmp/*
+!backend/tmp/.keep
+!backend/tmp/storage/
+backend/tmp/storage/*
+!backend/tmp/storage/.keep
+backend/storage/*
+!backend/storage/.keep
+backend/public/assets/
+backend/public/packs/
+backend/public/uploads/
+
+# Local databases
+backend/db/*.sqlite3
+backend/db/*.sqlite3-*
+
+# Environment files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Logs and temporary files
+*.log
+*.pid
+*.seed
+*.swp
+*.swo
+
+# OS and editor files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Bundler and local Ruby tooling
+.bundle/
+
+# Rails and deployment secrets
+backend/config/master.key
+backend/config/credentials/*.key
+backend/.kamal/secrets

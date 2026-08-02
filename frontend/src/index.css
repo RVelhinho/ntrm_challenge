@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-brand-50: #f1fbf7;
+  --color-brand-100: #dcf5eb;
+  --color-brand-200: #bcebd9;
+  --color-brand-300: #8dddc2;
+  --color-brand-400: #5bc9a5;
+  --color-brand-500: #3ab487;
+  --color-brand-600: #319b75;
+  --color-brand-700: #287d61;
+  --color-brand-800: #23644f;
+  --color-brand-900: #1f5243;
+  --color-accent-50: #fff8f3;
+  --color-accent-100: #fbe5dc;
+  --color-accent-200: #f3c9b6;
+  --color-accent-300: #df9669;
+  --color-accent-400: #df8250;
+  --color-accent-500: #d76e3c;
+  --color-page: #f6f5fa;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #fafafa;
+  --color-border: #e8e8eb;
+  --color-border-strong: #dddde2;
+  --color-text: #56616b;
+  --color-text-strong: #38444d;
+  --color-text-muted: #8b959d;
+  --color-text-subtle: #a9b0b6;
+  --color-success-soft: #dcf5eb;
+  --color-success-text: #319b75;
+  --color-danger-soft: #f8e2df;
+  --color-danger-text: #bf6359;
+  --color-warning-soft: #fff3dd;
+  --color-warning-text: #a47725;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --radius-control: 0.25rem;
+  --radius-card: 0.375rem;
+  --radius-panel: 0.5rem;
+  --shadow-panel: 0 1px 4px rgb(31 41 55 / 8%);
+  --shadow-card: 0 1px 2px rgb(31 41 55 / 5%);
+  --shadow-input: 0 2px 10px rgb(31 41 55 / 10%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply m-0 min-w-80 bg-page font-sans text-text antialiased;
+  }
+  button,
+  input {
+    font: inherit;
+  }
+}
