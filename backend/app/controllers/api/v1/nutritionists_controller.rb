@@ -12,7 +12,7 @@ class Api::V1::NutritionistsController < ApplicationController
   private
 
   def search_params
-    params.permit(:q, :name, :service, :location, :latitude, :longitude)
+    params.permit(:q, :name, :service, :location, :latitude, :longitude, :page, :per_page)
   end
 
   def paginate(records)

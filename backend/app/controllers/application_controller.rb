@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+  wrap_parameters false
+
   rescue_from ActionController::ParameterMissing do |error|
     render json: { error: { code: "invalid_request", message: error.message } }, status: :unprocessable_entity
   end

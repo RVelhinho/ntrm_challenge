@@ -65,7 +65,7 @@ RSpec.describe "Nutritionists API", type: :request do
         run_test!
       end
 
-      response "200", "returns all locations when location is absent" do
+      response "200", "defaults to Braga when location is absent" do
         let!(:braga_nutritionist) { create(:nutritionist, name: "Braga Nutritionist") }
         let!(:braga_service) { create(:service, nutritionist: braga_nutritionist, location: "Braga") }
         let!(:other_nutritionist) { create(:nutritionist, name: "Porto Nutritionist") }
@@ -78,9 +78,26 @@ RSpec.describe "Nutritionists API", type: :request do
         schema type: :object, required: %w[items meta]
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["items"].map { |nutritionist| nutritionist["id"] }).to include(braga_nutritionist.id, other_nutritionist.id)
-          expect(body.dig("meta", "location")).to be_nil
-          expect(body.dig("meta", "location_mode")).to eq("all")
+          expect(body["items"].map { |nutritionist| nutritionist["id"] }).to eq([braga_nutritionist.id])
+          expect(body.dig("meta", "location")).to eq("Braga")
+          expect(body.dig("meta", "location_mode")).to eq("exact")
+        end
+      end
+
+      response "200", "defaults to Braga for an invalid location" do
+        let!(:braga_nutritionist) { create(:nutritionist, name: "Braga Nutritionist") }
+        let!(:braga_service) { create(:service, nutritionist: braga_nutritionist, location: "Braga") }
+        let!(:other_nutritionist) { create(:nutritionist, name: "Porto Nutritionist") }
+        let!(:other_service) { create(:service, nutritionist: other_nutritionist, location: "Porto") }
+        let(:q) { nil }
+        let(:location) { "Unknown" }
+
+        schema type: :object, required: %w[items meta]
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["items"].map { |nutritionist| nutritionist["id"] }).to eq([braga_nutritionist.id])
+          expect(body.dig("meta", "location")).to eq("Braga")
+          expect(body.dig("meta", "location_mode")).to eq("exact")
         end
       end
 

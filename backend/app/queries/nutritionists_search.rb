@@ -55,10 +55,10 @@ class NutritionistsSearch
     return nearest_location(origin) if origin
 
     requested = @filters[:location].presence.to_s.strip
-    return if requested.blank?
+    return "Braga" if requested.blank?
 
     matching_location = Service.where("lower(location) = ?", requested.downcase).pick(:location)
-    matching_location.presence
+    matching_location.presence || "Braga"
   end
 
   def coordinates_from_params
