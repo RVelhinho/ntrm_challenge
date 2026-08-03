@@ -19,7 +19,7 @@ export function LanguageSwitcher() {
           onSelect={() => setLanguage('en')}
           textValue={t('common.english')}
           data-dropdown-selected={language === 'en' ? 'true' : undefined}
-          className={language === 'en' ? 'bg-brand-50 font-medium' : undefined}
+          className={language === 'en' ? 'bg-primary-soft font-medium' : undefined}
         >
           {t('common.english')}
         </DropdownItem>
@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
           onSelect={() => setLanguage('pt')}
           textValue={t('common.portuguese')}
           data-dropdown-selected={language === 'pt' ? 'true' : undefined}
-          className={language === 'pt' ? 'bg-brand-50 font-medium' : undefined}
+          className={language === 'pt' ? 'bg-primary-soft font-medium' : undefined}
         >
           {t('common.portuguese')}
         </DropdownItem>

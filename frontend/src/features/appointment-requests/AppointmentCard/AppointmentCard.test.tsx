@@ -19,7 +19,7 @@ describe('AppointmentCard', () => {
   it('displays guest information and exposes decision actions in a dialog', async () => {
     const onAccept = vi.fn();
     const onReject = vi.fn();
-    render(
+    const { container } = render(
       <AppointmentCard
         request={request}
         accepting={false}
@@ -29,6 +29,10 @@ describe('AppointmentCard', () => {
       />,
     );
 
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('appointment_header.png'),
+    );
     expect(screen.getByText('Follow-up')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Answer request' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();

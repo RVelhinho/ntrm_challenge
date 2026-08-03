@@ -41,4 +41,26 @@ describe('NutritionistCard', () => {
       longitude: -8.4,
     });
   });
+
+  it.each([
+    ['female', 'female_nutr_real.png'],
+    ['male', 'nutr_male_real.png'],
+  ])('uses the %s nutritionist portrait', (gender, portrait) => {
+    const { container } = render(
+      <NutritionistCard
+        nutritionist={{
+          id: 1,
+          name: 'Dr. Ana',
+          gender,
+          services: [],
+        }}
+        onSchedule={vi.fn()}
+      />,
+    );
+
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining(portrait),
+    );
+  });
 });

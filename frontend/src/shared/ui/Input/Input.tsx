@@ -3,7 +3,7 @@ import { tv, type VariantProps } from 'tailwind-variants';
 import { cn } from '../../utils/utils';
 
 const input = tv({
-  base: 'h-10 w-full rounded-control border-border bg-surface px-3 text-sm text-text-strong shadow-input outline-none transition placeholder:text-text-subtle focus:border-brand-300 focus:ring-2 focus:ring-brand-100 disabled:bg-surface-subtle',
+  base: 'h-10 w-full rounded-control border-border bg-surface px-3 text-sm text-text-strong shadow-input outline-none transition placeholder:text-text-subtle focus:border-primary-border focus:ring-2 focus:ring-primary-soft disabled:bg-surface-subtle',
   variants: {
     invalid: {
       true: 'border-danger-text focus:border-danger-text focus:ring-danger-soft',

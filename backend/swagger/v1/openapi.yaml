@@ -442,6 +442,9 @@ paths:
                         biography:
                           type: string
                           nullable: true
+                        gender:
+                          type: string
+                          nullable: true
                         distance_km:
                           type: number
                           nullable: true

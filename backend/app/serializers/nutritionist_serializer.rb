@@ -4,6 +4,7 @@ class NutritionistSerializer
       id: nutritionist.id,
       name: nutritionist.name,
       biography: nutritionist.biography,
+      gender: nutritionist.gender,
       distance_km: distance_km,
       services: nutritionist.services.map do |service|
         {

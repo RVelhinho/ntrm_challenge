@@ -38,9 +38,9 @@ export const pt = {
     title: 'Encontre um nutricionista à sua medida.',
     description: 'Pesquise por profissional ou serviço e peça o horário que lhe for conveniente.',
     nameOrService: 'Nome ou serviço',
-    nameOrServicePlaceholder: 'Pesquisar por nome ou serviço',
+    nameOrServicePlaceholder: 'Nome, serviço, marcação online...',
     location: 'Localização',
-    locationPlaceholder: 'Braga por defeito',
+    locationPlaceholder: 'Localização',
     suggestions: 'Sugestões de {{label}}',
     noSuggestions: 'Não foram encontradas sugestões.',
     useCurrentLocation: 'Usar localização atual',
@@ -66,6 +66,7 @@ export const pt = {
     duration: 'Duração',
     price: 'Preço',
     service: 'Serviço',
+    followUp: 'Seguimento',
   },
   appointment: {
     title: 'Pedir uma consulta',
@@ -82,7 +83,7 @@ export const pt = {
     error: 'Não foi possível enviar o pedido. Tente novamente.',
     success: 'O seu pedido de consulta está pendente.',
   },
-  nutritionist: { personalPage: 'Página pessoal', schedule: 'Marcar consulta' },
+  nutritionist: { personalPage: 'Website', schedule: 'Marcar consulta' },
   requests: {
     eyebrow: 'Espaço do nutricionista',
     title: 'Pedidos de consulta pendentes',

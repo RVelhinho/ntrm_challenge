@@ -58,7 +58,7 @@ export function DropdownItem({
   return (
     <DropdownMenu.Item
       className={cn(
-        'my-1 cursor-default rounded-control px-3 py-2 text-sm outline-none focus:bg-brand-50',
+        'my-1 cursor-default rounded-control px-3 py-2 text-sm outline-none focus:bg-primary-soft',
         className,
       )}
       {...props}

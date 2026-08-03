@@ -12,6 +12,8 @@ export type GetApiV1Nutritionists200ItemsItem = {
   /** @nullable */
   biography?: string | null;
   /** @nullable */
+  gender?: string | null;
+  /** @nullable */
   distance_km?: number | null;
   services: GetApiV1Nutritionists200ItemsItemServicesItem[];
 };

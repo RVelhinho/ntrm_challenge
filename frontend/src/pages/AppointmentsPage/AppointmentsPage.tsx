@@ -63,8 +63,8 @@ export function AppointmentsPage() {
 
   return (
     <div className="bg-page">
-      <section className="bg-brand-500">
-        <div className="mx-auto w-full max-w-7xl px-4 pb-6 pt-5 sm:px-6 lg:px-8">
+      <section className="bg-primary">
+        <div className="mx-auto w-full max-w-6xl px-4 pb-6 pt-5 sm:px-6 lg:px-8">
           <div className="max-w-xl">
             <SearchField
               id="request-search"
@@ -76,7 +76,7 @@ export function AppointmentsPage() {
           </div>
         </div>
       </section>
-      <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="rounded-panel border-border bg-surface p-4 shadow-panel sm:p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
@@ -187,7 +187,7 @@ export function AppointmentsPage() {
 
 function RequestCardSkeleton() {
   return (
-    <div className="flex min-h-[148px] flex-col animate-pulse rounded-card border border-border bg-white">
+    <div className="flex min-h-[148px] flex-col animate-pulse rounded-card border border-border bg-surface">
       <div className="flex flex-1 items-start gap-3.5 px-4 py-4.5">
         <div className="h-11 w-11 shrink-0 rounded-full bg-surface-subtle" />
         <div className="space-y-2">

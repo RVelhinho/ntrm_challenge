@@ -38,9 +38,9 @@ export const en = {
     title: 'Find a nutritionist who fits your life.',
     description: 'Search by professional or service, then request the time that works for you.',
     nameOrService: 'Name or service',
-    nameOrServicePlaceholder: 'Search by name or service',
+    nameOrServicePlaceholder: 'Name, service, online appointment...',
     location: 'Location',
-    locationPlaceholder: 'Braga by default',
+    locationPlaceholder: 'Location',
     suggestions: '{{label}} suggestions',
     noSuggestions: 'No suggestions found.',
     useCurrentLocation: 'Use current location',
@@ -64,6 +64,7 @@ export const en = {
     duration: 'Duration',
     price: 'Price',
     service: 'Service',
+    followUp: 'Follow-up',
   },
   appointment: {
     title: 'Request an appointment',
@@ -81,7 +82,7 @@ export const en = {
     success: 'Your appointment request is pending.',
   },
   nutritionist: {
-    personalPage: 'Personal page',
+    personalPage: 'Website',
     schedule: 'Schedule appointment',
   },
   requests: {

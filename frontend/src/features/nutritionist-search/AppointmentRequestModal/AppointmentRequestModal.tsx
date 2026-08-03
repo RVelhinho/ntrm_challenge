@@ -107,7 +107,11 @@ export function AppointmentRequestModal({
               </Text>
             </DialogTitle>
             <DialogDescription asChild>
-              <Text tone="muted" size="base" className="mt-2 rounded-card bg-brand-50 px-3 py-2">
+              <Text
+                tone="muted"
+                size="base"
+                className="mt-2 rounded-card bg-primary-soft px-3 py-2"
+              >
                 {nutritionistName} · {service.name}
               </Text>
             </DialogDescription>

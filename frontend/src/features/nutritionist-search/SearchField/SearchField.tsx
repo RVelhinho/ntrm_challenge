@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
+import { LocateFixed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '../../../shared/ui/Input/Input';
 import {
@@ -99,7 +100,7 @@ export function SearchField({
   return (
     <div className="min-w-0">
       <Popover open={open} onOpenChange={handleOpenChange}>
-        <label className="mb-1.5 block text-xs font-medium text-white" htmlFor={id}>
+        <label className="mb-1.5 block text-xs font-medium text-on-primary" htmlFor={id}>
           {label}
         </label>
         <PopoverAnchor asChild>
@@ -130,24 +131,16 @@ export function SearchField({
                 type="button"
                 aria-label={t('search.useCurrentLocation')}
                 title={t('search.useCurrentLocation')}
-                className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-control text-brand-600 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-control text-primary-text hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-border"
                 onClick={onUseCurrentLocation}
               >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="size-5 fill-none stroke-current"
-                  strokeWidth="1.8"
-                >
-                  <path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z" />
-                  <circle cx="12" cy="9" r="2.2" />
-                </svg>
+                <LocateFixed aria-hidden="true" className="size-5" strokeWidth={1.8} />
               </button>
             )}
           </div>
         </PopoverAnchor>
         {locationStatus && (
-          <p className="mt-1 text-xs text-brand-100" role="status">
+          <p className="mt-1 text-xs text-primary-soft" role="status">
             {locationStatus}
           </p>
         )}
@@ -167,8 +160,8 @@ export function SearchField({
                 role="option"
                 aria-selected={index === activeIndex}
                 className={cn(
-                  'w-full rounded-control px-3 py-2 text-left text-sm text-text outline-none hover:bg-brand-50',
-                  index === activeIndex && 'bg-brand-50 font-medium',
+                  'w-full rounded-control px-3 py-2 text-left text-sm text-text outline-none hover:bg-primary-soft',
+                  index === activeIndex && 'bg-primary-soft font-medium',
                 )}
                 onMouseDown={(event) => event.preventDefault()}
                 onMouseEnter={() => setActiveIndex(index)}

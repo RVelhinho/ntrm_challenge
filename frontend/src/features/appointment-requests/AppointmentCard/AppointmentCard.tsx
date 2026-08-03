@@ -12,10 +12,11 @@ import {
   DialogTrigger,
 } from '../../../shared/ui/Dialog/Dialog';
 import { Icon } from '../../../shared/ui/Icon/Icon';
+import { Image } from '../../../shared/ui/Image/Image';
 import { Text } from '../../../shared/ui/Text/Text';
 import { formatDateTime, formatTime } from '../../../shared/utils/utils';
 import { useTranslation } from 'react-i18next';
-import portrait from '../../../shared/assets/portrait.svg';
+import appointmentHeader from '../../../shared/assets/appointment_header.png';
 
 export function AppointmentCard({
   request,
@@ -41,20 +42,20 @@ export function AppointmentCard({
   const time = `${new Intl.DateTimeFormat(i18n.language, { timeStyle: 'short' }).format(new Date(request.starts_at))} ${t('requests.to')} ${end}`;
 
   return (
-    <article className="flex min-h-[148px] flex-col rounded-card border border-border bg-white shadow-card">
+    <article className="flex min-h-[148px] flex-col rounded-card border border-border bg-surface shadow-card">
       <div className="grid flex-1 grid-cols-[auto_minmax(0,1fr)] gap-x-3.5 px-4 py-4.5">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-600">
-          <img src={portrait} alt="" className="size-9 rounded-full object-cover" />
+        <div className="grid h-20 w-20 place-items-center rounded-full bg-primary-soft text-primary-text">
+          <Image src={appointmentHeader} alt="" className="w-full object-cover" />
         </div>
         <div className="min-w-0">
-          <Text as="h2" size="md" weight="medium" className="truncate leading-5 text-text-strong">
+          <Text as="h2" size="base" weight="medium" className="truncate leading-5 text-text-strong">
             {request.guest.name}
           </Text>
           <Text size="xs" className="mt-0.5 truncate leading-4">
             {request.service.name}
           </Text>
           <Text as="span" tone="muted" size="xs" className="mt-2 flex items-center gap-2 leading-4">
-            <span className="grid size-6 shrink-0 place-items-center rounded-control bg-brand-100 text-brand-600">
+            <span className="grid size-6 shrink-0 place-items-center rounded-control bg-primary-soft text-primary-text">
               <Icon name="calendar" width={14} height={14} strokeWidth={1.8} />
             </span>
             <span>{date}</span>
@@ -66,7 +67,7 @@ export function AppointmentCard({
             weight="medium"
             className="mt-1 flex items-center gap-2 leading-4"
           >
-            <span className="grid size-6 shrink-0 place-items-center rounded-control bg-brand-100 text-brand-600">
+            <span className="grid size-6 shrink-0 place-items-center rounded-control bg-primary-soft text-primary-text">
               <Icon name="clock" width={14} height={14} strokeWidth={1.8} />
             </span>
             <span>{time}</span>
@@ -136,7 +137,7 @@ export function AppointmentCard({
           </Dialog>
         ) : (
           <div className="inline-flex items-center gap-2">
-            <span className="grid size-6 place-items-center rounded-control bg-brand-100 text-brand-600">
+            <span className="grid size-6 place-items-center rounded-control bg-primary-soft text-primary-text">
               <Icon
                 name={request.status === 'accepted' ? 'circle-check' : 'circle-x'}
                 width={14}

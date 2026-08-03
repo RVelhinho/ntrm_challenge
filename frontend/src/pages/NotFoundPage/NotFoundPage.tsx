@@ -9,7 +9,7 @@ export function NotFoundPage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 items-center px-4 py-16 sm:px-6">
       <section className="w-full rounded-panel border-border bg-surface p-6 text-center shadow-panel md:p-8">
-        <p className="text-xs font-medium text-brand-600">{t('notFound.code')}</p>
+        <p className="text-xs font-medium text-primary-text">{t('notFound.code')}</p>
         <h1 className="mt-2 text-xl font-medium tracking-tight text-text-strong">
           {t('notFound.title')}
         </h1>

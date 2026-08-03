@@ -87,8 +87,8 @@ export function NutritionistSearchPage() {
 
   return (
     <div className="bg-page">
-      <section className="bg-brand-500 pb-7 pt-2">
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="bg-primary pb-7 pt-2">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           <section aria-label={t('search.searchLabel')} className="mt-5">
             <form
               className="grid gap-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_auto] sm:items-end"
@@ -99,7 +99,6 @@ export function NutritionistSearchPage() {
             >
               <SearchField
                 id="nutritionist-query"
-                label={t('search.nameOrService')}
                 value={query}
                 onChange={setQuery}
                 onEnter={search}
@@ -108,7 +107,6 @@ export function NutritionistSearchPage() {
               />
               <SearchField
                 id="nutritionist-location"
-                label={t('search.location')}
                 value={location}
                 onChange={(value) => {
                   setLocation(value);
@@ -131,7 +129,7 @@ export function NutritionistSearchPage() {
           </section>
         </div>
       </section>
-      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-6xl px-4 py-0 sm:px-6 lg:px-8">
         {results.isLoading && (
           <Text className="mt-2" tone="muted" role="status">
             {t('search.loading')}
@@ -150,22 +148,6 @@ export function NutritionistSearchPage() {
         )}
         {response && (
           <>
-            <div className="mt-2 flex items-center justify-between gap-4">
-              <h2 className="text-base font-medium text-text-strong">
-                {response.meta.location_mode === 'nearest'
-                  ? t('search.nearestResults', {
-                      location: response.meta.location ?? t('search.currentLocation'),
-                    })
-                  : response.meta.location_mode === 'all'
-                    ? t('search.availableAll')
-                    : t('search.availableNear', {
-                        location: response.meta.location,
-                      })}
-              </h2>
-              <Text tone="muted" size="sm">
-                {t('search.found', { count: response.meta.total_count })}
-              </Text>
-            </div>
             {response.items.length === 0 ? (
               <Text tone="muted" className="mt-5">
                 {t('search.noResults')}

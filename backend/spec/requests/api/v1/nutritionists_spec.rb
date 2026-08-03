@@ -14,7 +14,7 @@ RSpec.describe "Nutritionists API", type: :request do
       parameter name: :longitude, in: :query, required: false, schema: { type: :number, minimum: -180, maximum: 180 }
 
       response "200", "matching nutritionists" do
-        let!(:nutritionist) { create(:nutritionist, name: "Dr. Braga") }
+        let!(:nutritionist) { create(:nutritionist, name: "Dr. Braga", gender: "female") }
         let!(:service) { create(:service, nutritionist: nutritionist, name: "Nutrition consultation", location: "Braga") }
         let(:q) { "consultation" }
         let(:location) { "Braga" }
@@ -26,30 +26,31 @@ RSpec.describe "Nutritionists API", type: :request do
           items: {
             type: :array,
             items: {
-          type: :object,
-          required: %w[id name services],
-          properties: {
-            id: { type: :integer },
-            name: { type: :string },
-            biography: { type: :string, nullable: true },
-            distance_km: { type: :number, nullable: true },
-            services: {
-              type: :array,
-              items: {
-                type: :object,
-                required: %w[id name price_cents duration_minutes location],
-                properties: {
-                  id: { type: :integer },
-                  name: { type: :string },
-                  price_cents: { type: :integer },
-                  duration_minutes: { type: :integer },
-                  location: { type: :string },
-                  latitude: { type: :number, nullable: true },
-                  longitude: { type: :number, nullable: true }
+              type: :object,
+              required: %w[id name services],
+              properties: {
+                id: { type: :integer },
+                name: { type: :string },
+                biography: { type: :string, nullable: true },
+                gender: { type: :string, nullable: true },
+                distance_km: { type: :number, nullable: true },
+                services: {
+                  type: :array,
+                  items: {
+                    type: :object,
+                    required: %w[id name price_cents duration_minutes location],
+                    properties: {
+                      id: { type: :integer },
+                      name: { type: :string },
+                      price_cents: { type: :integer },
+                      duration_minutes: { type: :integer },
+                      location: { type: :string },
+                      latitude: { type: :number, nullable: true },
+                      longitude: { type: :number, nullable: true }
+                    }
+                  }
                 }
               }
-            }
-          }
             }
           },
           meta: {
@@ -62,7 +63,9 @@ RSpec.describe "Nutritionists API", type: :request do
           }
         }
 
-        run_test!
+        run_test! do |response|
+          expect(JSON.parse(response.body).dig("items", 0, "gender")).to eq("female")
+        end
       end
 
       response "200", "defaults to Braga when location is absent" do
