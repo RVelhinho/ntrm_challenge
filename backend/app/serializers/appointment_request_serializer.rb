@@ -7,7 +7,10 @@ class AppointmentRequestSerializer
         name: request.guest.name,
         email: request.guest.email
       },
-      nutritionist_id: request.nutritionist_id,
+      nutritionist: {
+        id: request.nutritionist.id,
+        name: request.nutritionist.name
+      },
       service: {
         id: request.service.id,
         name: request.service.name

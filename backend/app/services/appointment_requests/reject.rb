@@ -11,13 +11,15 @@ module AppointmentRequests
     def call
       request = AppointmentRequest.find(@id)
 
-      request.with_lock do
-        raise ArgumentError, "only pending requests can be rejected" unless request.pending?
+      request.nutritionist.with_lock do
+        request.lock!
+        raise DomainError.new("invalid_status_transition", "only pending requests can be rejected", status: :conflict) unless request.pending?
 
         request.update!(status: :rejected, answered_at: Time.current)
       end
 
       AppointmentRequestMailer.rejected(request).deliver_later
+
       request
     end
   end

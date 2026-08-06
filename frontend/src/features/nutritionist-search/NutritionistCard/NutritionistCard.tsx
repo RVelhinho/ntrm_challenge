@@ -2,15 +2,23 @@ import type {
   GetApiV1Nutritionists200ItemsItem,
   GetApiV1Nutritionists200ItemsItemServicesItem,
 } from '../../../api/generated/models';
-import { Button } from '../../../shared/ui/Button/Button';
-import { Image } from '../../../shared/ui/Image/Image';
-import { Label } from '../../../shared/ui/Label/Label';
-import { Text } from '../../../shared/ui/Text/Text';
+import { Button } from '../../../components/shared/ui/Button/Button';
+import { Image } from '../../../components/shared/ui/Image/Image';
+import { Label } from '../../../components/shared/ui/Label/Label';
+import { Text } from '../../../components/shared/ui/Text/Text';
 import { useTranslation } from 'react-i18next';
-import { Icon } from '../../../shared/ui/Icon/Icon';
+import { Icon } from '../../../components/shared/ui/Icon/Icon';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../components/shared/ui/Select/Select';
 import { useState } from 'react';
 import femaleNutritionist from '../../../shared/assets/female_nutr_real.png';
 import maleNutritionist from '../../../shared/assets/nutr_male_real.png';
+import neutralNutritionist from '../../../shared/assets/portrait.svg';
 
 type NutritionistCardProps = {
   nutritionist: GetApiV1Nutritionists200ItemsItem;
@@ -23,7 +31,12 @@ export function NutritionistCard({ nutritionist, onSchedule }: NutritionistCardP
   const selectedService =
     nutritionist.services.find((service) => service.id === selectedServiceId) ??
     nutritionist.services[0];
-  const portrait = nutritionist.gender === 'female' ? femaleNutritionist : maleNutritionist;
+  const portrait =
+    nutritionist.gender === 'female'
+      ? femaleNutritionist
+      : nutritionist.gender === 'male'
+        ? maleNutritionist
+        : neutralNutritionist;
   const currency = new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: 'EUR',
@@ -70,7 +83,8 @@ export function NutritionistCard({ nutritionist, onSchedule }: NutritionistCardP
                     {selectedService.name}
                   </Text>
                   <Text as="span" size="sm" className="flex items-center gap-1.5 leading-4">
-                    {selectedService.location}
+                    {selectedService.location} · {selectedService.duration_minutes}{' '}
+                    {t('search.minutes')}
                   </Text>
                 </div>
               </div>
@@ -82,18 +96,21 @@ export function NutritionistCard({ nutritionist, onSchedule }: NutritionistCardP
                     height={24}
                     className="shrink-0 text-primary me-2"
                   />
-                  <select
-                    aria-label={t('search.service')}
-                    className="max-w-full truncate rounded-control border-0 bg-transparent p-0 outline-none focus:ring-2 focus:ring-primary-soft text-sm"
-                    value={selectedService.id}
-                    onChange={(event) => setSelectedServiceId(Number(event.target.value))}
+                  <Select
+                    value={String(selectedService.id)}
+                    onValueChange={(value) => setSelectedServiceId(Number(value))}
                   >
-                    {nutritionist.services.map((service) => (
-                      <option key={service.id} value={service.id}>
-                        {service.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger aria-label={t('search.service')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {nutritionist.services.map((service) => (
+                        <SelectItem key={service.id} value={String(service.id)}>
+                          {service.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center">
                   <Icon

@@ -1,52 +1,68 @@
 ---
 openapi: 3.0.1
 info:
-  title: API V1
+  title: Nutrium Appointment Requests API
+  description: Search nutritionists and manage guest appointment requests.
   version: v1
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit
 paths:
-  "/api/v1/nutritionists/{nutritionist_id}/appointment_requests":
+  "/api/v1/appointment_requests":
     get:
-      summary: List pending requests for a nutritionist
+      summary: List appointment requests across all nutritionists
       tags:
       - Appointment Requests
       parameters:
-      - name: nutritionist_id
-        in: path
-        required: true
+      - name: q
+        in: query
+        required: false
         schema:
-          type: integer
-      - name: page
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - accepted
+          - rejected
+          - superseded
+          - all
+          default: pending
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
         in: query
         required: false
         schema:
           type: integer
           minimum: 1
-      - name: per_page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 50
+          maximum: 100
+          default: 20
       responses:
         '200':
-          description: pending requests
+          description: appointment request page
           content:
             application/json:
               schema:
                 type: object
                 required:
-                - items
-                - meta
+                - data
+                - page_info
                 properties:
-                  items:
+                  data:
                     type: array
                     items:
                       type: object
                       required:
                       - id
                       - guest
-                      - nutritionist_id
+                      - nutritionist
                       - service
                       - starts_at
                       - ends_at
@@ -69,8 +85,16 @@ paths:
                             email:
                               type: string
                               format: email
-                        nutritionist_id:
-                          type: integer
+                        nutritionist:
+                          type: object
+                          required:
+                          - id
+                          - name
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
                         service:
                           type: object
                           required:
@@ -83,10 +107,10 @@ paths:
                               type: string
                         starts_at:
                           type: string
-                          format: date_time
+                          format: date-time
                         ends_at:
                           type: string
-                          format: date_time
+                          format: date-time
                         status:
                           type: string
                           enum:
@@ -96,25 +120,47 @@ paths:
                           - superseded
                         answered_at:
                           type: string
-                          format: date_time
+                          format: date-time
                           nullable: true
-                  meta:
+                  page_info:
                     type: object
                     required:
-                    - page
-                    - per_page
-                    - total_count
-                    - total_pages
+                    - page_size
+                    - has_next_page
+                    - has_previous_page
+                    - next_cursor
                     properties:
-                      page:
+                      page_size:
                         type: integer
-                      per_page:
-                        type: integer
-                      total_count:
-                        type: integer
-                      total_pages:
-                        type: integer
-  "/api/v1/appointment_requests":
+                      has_next_page:
+                        type: boolean
+                      has_previous_page:
+                        type: boolean
+                      next_cursor:
+                        type: string
+                        nullable: true
+        '400':
+          description: invalid cursor
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details:
+                        type: object
+                        additionalProperties: true
     post:
       summary: Create an appointment request
       tags:
@@ -130,7 +176,7 @@ paths:
                 required:
                 - id
                 - guest
-                - nutritionist_id
+                - nutritionist
                 - service
                 - starts_at
                 - ends_at
@@ -153,8 +199,16 @@ paths:
                       email:
                         type: string
                         format: email
-                  nutritionist_id:
-                    type: integer
+                  nutritionist:
+                    type: object
+                    required:
+                    - id
+                    - name
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
                   service:
                     type: object
                     required:
@@ -167,10 +221,10 @@ paths:
                         type: string
                   starts_at:
                     type: string
-                    format: date_time
+                    format: date-time
                   ends_at:
                     type: string
-                    format: date_time
+                    format: date-time
                   status:
                     type: string
                     enum:
@@ -180,8 +234,30 @@ paths:
                     - superseded
                   answered_at:
                     type: string
-                    format: date_time
+                    format: date-time
                     nullable: true
+        '409':
+          description: time overlaps an accepted appointment
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details:
+                        type: object
+                        additionalProperties: true
         '422':
           description: invalid appointment request
           content:
@@ -224,7 +300,7 @@ paths:
                   type: integer
                 starts_at:
                   type: string
-                  format: date_time
+                  format: date-time
         required: true
   "/api/v1/appointment_requests/{id}/accept":
     patch:
@@ -247,7 +323,7 @@ paths:
                 required:
                 - id
                 - guest
-                - nutritionist_id
+                - nutritionist
                 - service
                 - starts_at
                 - ends_at
@@ -270,8 +346,16 @@ paths:
                       email:
                         type: string
                         format: email
-                  nutritionist_id:
-                    type: integer
+                  nutritionist:
+                    type: object
+                    required:
+                    - id
+                    - name
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
                   service:
                     type: object
                     required:
@@ -284,10 +368,10 @@ paths:
                         type: string
                   starts_at:
                     type: string
-                    format: date_time
+                    format: date-time
                   ends_at:
                     type: string
-                    format: date_time
+                    format: date-time
                   status:
                     type: string
                     enum:
@@ -297,8 +381,30 @@ paths:
                     - superseded
                   answered_at:
                     type: string
-                    format: date_time
+                    format: date-time
                     nullable: true
+        '409':
+          description: request is not pending
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details:
+                        type: object
+                        additionalProperties: true
   "/api/v1/appointment_requests/{id}/reject":
     patch:
       summary: Reject an appointment request
@@ -320,7 +426,7 @@ paths:
                 required:
                 - id
                 - guest
-                - nutritionist_id
+                - nutritionist
                 - service
                 - starts_at
                 - ends_at
@@ -343,8 +449,16 @@ paths:
                       email:
                         type: string
                         format: email
-                  nutritionist_id:
-                    type: integer
+                  nutritionist:
+                    type: object
+                    required:
+                    - id
+                    - name
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
                   service:
                     type: object
                     required:
@@ -357,10 +471,10 @@ paths:
                         type: string
                   starts_at:
                     type: string
-                    format: date_time
+                    format: date-time
                   ends_at:
                     type: string
-                    format: date_time
+                    format: date-time
                   status:
                     type: string
                     enum:
@@ -370,8 +484,30 @@ paths:
                     - superseded
                   answered_at:
                     type: string
-                    format: date_time
+                    format: date-time
                     nullable: true
+        '409':
+          description: request is not pending
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details:
+                        type: object
+                        additionalProperties: true
   "/api/v1/nutritionists":
     get:
       summary: Search nutritionists and services
@@ -394,37 +530,27 @@ paths:
         schema:
           type: integer
           minimum: 1
-      - name: per_page
+          default: 1
+      - name: limit
         in: query
         required: false
         schema:
           type: integer
           minimum: 1
-          maximum: 50
-      - name: latitude
-        in: query
-        required: false
-        schema:
-          type: number
-          minimum: -90
-          maximum: 90
-      - name: longitude
-        in: query
-        required: false
-        schema:
-          type: number
-          minimum: -180
-          maximum: 180
+          maximum: 100
+          default: 20
       responses:
         '200':
-          description: orders by nearest coordinates
+          description: matching nutritionists
           content:
             application/json:
               schema:
                 type: object
                 required:
                 - items
-                - meta
+                - page_info
+                - location
+                - locations
                 properties:
                   items:
                     type: array
@@ -444,9 +570,6 @@ paths:
                           nullable: true
                         gender:
                           type: string
-                          nullable: true
-                        distance_km:
-                          type: number
                           nullable: true
                         services:
                           type: array
@@ -469,41 +592,34 @@ paths:
                                 type: integer
                               location:
                                 type: string
-                              latitude:
-                                type: number
-                                nullable: true
-                              longitude:
-                                type: number
-                                nullable: true
-                  meta:
+                  page_info:
                     type: object
                     required:
-                    - page
-                    - per_page
+                    - current_page
+                    - page_size
                     - total_count
                     - total_pages
-                    - location
-                    - location_mode
+                    - has_next_page
+                    - has_previous_page
                     properties:
-                      page:
+                      current_page:
                         type: integer
-                      per_page:
+                      page_size:
                         type: integer
                       total_count:
                         type: integer
                       total_pages:
                         type: integer
-                      location:
-                        type: string
-                        nullable: true
-                      location_mode:
-                        type: string
-                        enum:
-                        - all
-                        - exact
-                        - nearest
+                      has_next_page:
+                        type: boolean
+                      has_previous_page:
+                        type: boolean
+                  location:
+                    type: string
+                  locations:
+                    type: array
+                    items:
+                      type: string
 servers:
-- url: https://{defaultHost}
-  variables:
-    defaultHost:
-      default: www.example.com
+- url: http://localhost:3000
+  description: Local development server

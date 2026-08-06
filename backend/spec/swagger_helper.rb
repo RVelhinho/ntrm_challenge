@@ -18,18 +18,19 @@ RSpec.configure do |config|
     'v1/openapi.yaml' => {
       openapi: '3.0.1',
       info: {
-        title: 'API V1',
-        version: 'v1'
+        title: 'Nutrium Appointment Requests API',
+        description: 'Search nutritionists and manage guest appointment requests.',
+        version: 'v1',
+        license: {
+          name: 'MIT',
+          url: 'https://opensource.org/license/mit'
+        }
       },
       paths: {},
       servers: [
         {
-          url: 'https://{defaultHost}',
-          variables: {
-            defaultHost: {
-              default: 'www.example.com'
-            }
-          }
+          url: 'http://localhost:3000',
+          description: 'Local development server'
         }
       ]
     }

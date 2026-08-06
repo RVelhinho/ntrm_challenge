@@ -29,3 +29,12 @@
 
 en:
   hello: "Hello world"
+  appointment_request_mailer:
+    greeting: "Hello %{name},"
+    details: "Appointment details: %{starts_at} at %{location}."
+    accepted:
+      subject: "Your appointment request was accepted"
+      body: "Your appointment request with %{nutritionist} for %{service} was accepted."
+    rejected:
+      subject: "Your appointment request was rejected"
+      body: "Your appointment request with %{nutritionist} for %{service} was rejected."

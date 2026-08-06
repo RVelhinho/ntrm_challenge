@@ -1,0 +1,1 @@
+export const APPOINTMENT_REQUESTS_PAGE_LIMIT = 20;

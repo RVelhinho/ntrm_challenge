@@ -1,19 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { GetApiV1NutritionistsNutritionistIdAppointmentRequests200ItemsItem } from '../../../api/generated/models';
+import type { GetApiV1AppointmentRequests200DataItem } from '../../../api/generated/models';
 import { AppointmentCard } from './AppointmentCard';
 
 const request = {
   id: 1,
-  nutritionist_id: 2,
+  nutritionist: { id: 2, name: 'Dr. Ana' },
   guest: { id: 3, name: 'Guest', email: 'guest@example.com' },
   service: { id: 4, name: 'Follow-up' },
   starts_at: '2026-08-03T10:00:00Z',
   ends_at: '2026-08-03T10:30:00Z',
   status: 'pending',
   answered_at: null,
-} satisfies GetApiV1NutritionistsNutritionistIdAppointmentRequests200ItemsItem;
+} satisfies GetApiV1AppointmentRequests200DataItem;
 
 describe('AppointmentCard', () => {
   it('displays guest information and exposes decision actions in a dialog', async () => {
@@ -41,5 +41,18 @@ describe('AppointmentCard', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Reject request' }));
     expect(onAccept).toHaveBeenCalledOnce();
     expect(onReject).toHaveBeenCalledOnce();
+  });
+
+  it('renders superseded requests explicitly', () => {
+    render(
+      <AppointmentCard
+        request={{ ...request, status: 'superseded' }}
+        accepting={false}
+        rejecting={false}
+        onAccept={vi.fn()}
+        onReject={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Request superseded')).toBeInTheDocument();
   });
 });

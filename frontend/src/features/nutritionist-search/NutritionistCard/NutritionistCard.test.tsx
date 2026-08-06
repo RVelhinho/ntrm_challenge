@@ -19,8 +19,6 @@ describe('NutritionistCard', () => {
               price_cents: 5500,
               duration_minutes: 60,
               location: 'Braga',
-              latitude: 41.5,
-              longitude: -8.4,
             },
           ],
         }}
@@ -37,15 +35,14 @@ describe('NutritionistCard', () => {
       price_cents: 5500,
       duration_minutes: 60,
       location: 'Braga',
-      latitude: 41.5,
-      longitude: -8.4,
     });
   });
 
   it.each([
     ['female', 'female_nutr_real.png'],
     ['male', 'nutr_male_real.png'],
-  ])('uses the %s nutritionist portrait', (gender, portrait) => {
+    [undefined, 'portrait.svg'],
+  ] as const)('uses the %s nutritionist portrait', (gender, portrait) => {
     const { container } = render(
       <NutritionistCard
         nutritionist={{
@@ -58,9 +55,11 @@ describe('NutritionistCard', () => {
       />,
     );
 
-    expect(container.querySelector('img')).toHaveAttribute(
-      'src',
-      expect.stringContaining(portrait),
-    );
+    const image = container.querySelector('img');
+    if (gender) {
+      expect(image).toHaveAttribute('src', expect.stringContaining(portrait));
+    } else {
+      expect(image?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/);
+    }
   });
 });

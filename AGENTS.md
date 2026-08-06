@@ -1,4 +1,4 @@
-# Appointment Requests — Agent Instructions
+# Appointment Requests - Agent Instructions
 
 ## Project objective
 
@@ -22,12 +22,14 @@ Business rules:
 - A guest is identified by normalized email.
 - A guest may have at most one pending appointment request.
 - Creating a new pending request supersedes the guest's previous pending request.
+- Creating or accepting a request must not overlap an accepted request for the
+  same nutritionist; PostgreSQL also enforces this invariant.
 - Accepting a request rejects every overlapping pending request belonging to
   the same nutritionist.
 - An appointment overlaps another when:
   `existing.starts_at < candidate.ends_at &&
 existing.ends_at > candidate.starts_at`.
-- Accepted or rejected requests trigger an email notification.
+- Email notifications are intentionally not implemented.
 - Authentication is intentionally out of scope.
 - Braga is the default location when the submitted location is absent or invalid.
 
@@ -97,7 +99,7 @@ Package management:
 - Use transactions for appointment creation, acceptance and rejection.
 - Lock records when concurrent decisions could violate an invariant.
 - Do not use model callbacks for appointment-decision workflows.
-- Enqueue emails only after the database transaction succeeds.
+- Do not introduce mailer behavior without an explicit product requirement.
 - Store money as integer cents, never floating point.
 - Store appointment timestamps in UTC.
 - Normalize guest emails to lowercase.

@@ -6,13 +6,13 @@ import { router } from '../../app/router';
 
 describe('NotFoundPage', () => {
   it('provides a translated route back to the home page', async () => {
+    await router.navigate({ to: '/missing-page' as never });
+
     render(
       <AppProviders>
         <RouterProvider router={router} />
       </AppProviders>,
     );
-
-    void router.navigate({ to: '/missing-page' as never });
 
     expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to home' })).toHaveAttribute('href', '/');

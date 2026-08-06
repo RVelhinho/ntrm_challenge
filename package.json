@@ -1,36 +1,37 @@
 {
   "name": "nutrium",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Appointment requests for guests and nutritionists",
   "private": true,
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "concurrently -n API,WEB \"pnpm dev:api\" \"pnpm dev:web\"",
     "dev:api": "cd backend && bin/rails server -p 3000",
     "dev:web": "pnpm --dir frontend dev",
-    "setup": "cd backend && bundle install && bin/rails db:prepare && cd ../frontend && pnpm install",
+    "setup": "pnpm install && cd backend && bundle install && bin/rails db:prepare",
     "test": "pnpm test:api && pnpm test:web",
     "test:api": "cd backend && bundle exec rspec",
     "test:web": "pnpm --dir frontend test",
     "lint": "pnpm lint:api && pnpm lint:web",
     "lint:api": "cd backend && bundle exec rubocop",
     "lint:web": "pnpm --dir frontend lint",
+    "format": "pnpm --dir frontend format",
+    "format:check": "pnpm --dir frontend format:check",
     "typecheck": "pnpm --dir frontend typecheck",
+    "build": "pnpm --dir frontend build",
+    "security": "cd backend && bundle exec brakeman --quiet --no-pager --exit-on-warn --exit-on-error && bundle exec bundler-audit check --update",
     "openapi": "cd backend && RAILS_ENV=test bundle exec rake rswag:specs:swaggerize",
     "codegen": "pnpm --dir frontend codegen",
     "api:sync": "pnpm openapi && pnpm codegen",
-    "check": "pnpm api:sync && pnpm lint && pnpm typecheck && pnpm test"
+    "api:check": "pnpm api:sync && git diff --exit-code -- backend/swagger/v1/openapi.yaml frontend/src/api/generated && test -z \"$(git ls-files --others --exclude-standard -- backend/swagger/v1/openapi.yaml frontend/src/api/generated)\"",
+    "check": "pnpm api:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm security"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.8.0",
-      "onFail": "download"
-    }
-  },
+  "license": "MIT",
   "type": "module",
   "devDependencies": {
     "concurrently": "^10.0.4"

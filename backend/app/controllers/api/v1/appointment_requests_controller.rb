@@ -1,18 +1,20 @@
 class Api::V1::AppointmentRequestsController < ApplicationController
   def index
-    nutritionist = Nutritionist.find(params[:nutritionist_id])
-    requests = nutritionist.appointment_requests.pending.includes(:guest, :service).order(:starts_at)
-    page = [ params.fetch(:page, 1).to_i, 1 ].max
-    per_page = params.fetch(:per_page, 3).to_i.clamp(1, 50)
-    total_count = requests.count
+    filters = normalized_index_filters
+    page = AppointmentRequestsCursorPagination.call(
+      scope: AppointmentRequestsSearch.call(filters),
+      cursor: params[:cursor],
+      limit: params[:limit],
+      filters: filters.stringify_keys
+    )
 
     render json: {
-      items: requests.offset((page - 1) * per_page).limit(per_page).map { |request| AppointmentRequestSerializer.call(request) },
-      meta: {
-        page: page,
-        per_page: per_page,
-        total_count: total_count,
-        total_pages: (total_count.to_f / per_page).ceil
+      data: page.records.map { |request| AppointmentRequestSerializer.call(request) },
+      page_info: {
+        page_size: page.page_size,
+        has_next_page: page.has_next_page,
+        has_previous_page: page.has_previous_page,
+        next_cursor: page.next_cursor
       }
     }
   end
@@ -47,5 +49,17 @@ class Api::V1::AppointmentRequestsController < ApplicationController
 
   def appointment_params
     params.permit(:guest_name, :guest_email, :service_id, :starts_at)
+  end
+
+  def index_params
+    params.permit(:q, :status, :cursor, :limit)
+  end
+
+  def normalized_index_filters
+    filters = index_params.to_h.symbolize_keys
+    {
+      q: filters[:q].to_s.strip.presence,
+      status: filters[:status].presence || "pending"
+    }
   end
 end

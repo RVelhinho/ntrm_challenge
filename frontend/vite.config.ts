@@ -9,7 +9,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     define: {
-      __NUTRIUM_API_URL__: JSON.stringify(env.VITE_API_URL ?? "http://localhost:3000"),
+      __NUTRIUM_API_URL__: JSON.stringify(
+        env.VITE_API_URL || (mode === "development" ? "http://localhost:3000" : ""),
+      ),
     },
     plugins: [
       tanstackRouter({

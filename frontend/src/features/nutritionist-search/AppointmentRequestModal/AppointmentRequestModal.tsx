@@ -8,8 +8,8 @@ import type {
   GetApiV1Nutritionists200ItemsItemServicesItem,
   PostApiV1AppointmentRequestsBody,
 } from '../../../api/generated/models';
-import { Button } from '../../../shared/ui/Button/Button';
-import { DateInput } from '../../../shared/ui/DateTimeInput/DateInput';
+import { Button } from '../../../components/shared/ui/Button/Button';
+import { DateInput } from '../../../components/shared/ui/DateTimeInput/DateInput';
 import {
   Dialog,
   DialogContent,
@@ -17,10 +17,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../../shared/ui/Dialog/Dialog';
-import { Input } from '../../../shared/ui/Input/Input';
-import { Text } from '../../../shared/ui/Text/Text';
-import { TimeInput } from '../../../shared/ui/DateTimeInput/TimeInput';
+} from '../../../components/shared/ui/Dialog/Dialog';
+import { Input } from '../../../components/shared/ui/Input/Input';
+import { Text } from '../../../components/shared/ui/Text/Text';
+import { TimeInput } from '../../../components/shared/ui/DateTimeInput/TimeInput';
+import { parseLocalDateTime } from './appointment-date-time';
+
+function localDateValue(value = new Date()): string {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 function createAppointmentSchema(t: (key: string) => string) {
   return z
@@ -31,14 +39,21 @@ function createAppointmentSchema(t: (key: string) => string) {
       time: z.string().min(1, t('appointment.timeError')),
     })
     .superRefine(({ date, time }, context) => {
-      const startsAt = new Date(`${date}T${time}`);
-      if (date && time && Number.isNaN(startsAt.getTime())) {
+      const validDate = date ? parseLocalDateTime(date, '00:00') : undefined;
+      const startsAt = parseLocalDateTime(date, time);
+      if (date && !validDate) {
+        context.addIssue({
+          code: 'custom',
+          path: ['date'],
+          message: t('appointment.invalidDateError'),
+        });
+      } else if (date && time && !startsAt) {
         context.addIssue({
           code: 'custom',
           path: ['time'],
-          message: t('appointment.timeError'),
+          message: t('appointment.invalidDateTimeError'),
         });
-      } else if (date && time && startsAt <= new Date()) {
+      } else if (startsAt && startsAt <= new Date()) {
         context.addIssue({
           code: 'custom',
           path: ['time'],
@@ -75,12 +90,14 @@ export function AppointmentRequestModal({
     validators: { onSubmit: schema },
     onSubmit: async ({ value }) => {
       try {
+        const startsAt = parseLocalDateTime(value.date, value.time);
+        if (!startsAt) return;
         await mutation.mutateAsync({
           data: {
             guest_name: value.guest_name,
             guest_email: value.guest_email.toLowerCase(),
             service_id: service.id,
-            starts_at: new Date(`${value.date}T${value.time}`).toISOString(),
+            starts_at: startsAt.toISOString(),
           } satisfies PostApiV1AppointmentRequestsBody,
         });
         onSuccess();
@@ -193,7 +210,7 @@ export function AppointmentRequestModal({
                 >
                   <DateInput
                     id="appointment-date"
-                    min={new Date().toISOString().slice(0, 10)}
+                    min={localDateValue()}
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -233,20 +250,16 @@ export function AppointmentRequestModal({
           </div>
           {mutation.isError && (
             <Text tone="danger" size="sm" role="alert">
-              {mutation.error?.body?.error?.message ?? t('appointment.error')}
+              {appointmentApiError(mutation.error, t)}
             </Text>
           )}
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={onClose}>
               {t('common.cancel')}
             </Button>
-            <form.Subscribe selector={(state) => ({ values: state.values })}>
-              {({ values }) => (
-                <Button
-                  type="submit"
-                  loading={mutation.isPending}
-                  disabled={!schema.safeParse(values).success || mutation.isPending}
-                >
+            <form.Subscribe>
+              {() => (
+                <Button type="submit" loading={mutation.isPending} disabled={mutation.isPending}>
                   {t('appointment.submit')}
                 </Button>
               )}
@@ -256,6 +269,18 @@ export function AppointmentRequestModal({
       </DialogContent>
     </Dialog>
   );
+}
+
+function appointmentApiError(error: ApiError | null, t: (key: string) => string): string {
+  switch (error?.body?.error?.code) {
+    case 'appointment_unavailable':
+      return t('appointment.unavailableError');
+    case 'invalid_record':
+    case 'invalid_request':
+      return t('appointment.invalidRequestError');
+    default:
+      return t('appointment.error');
+  }
 }
 
 function fieldError(errors: unknown[]): string | undefined {

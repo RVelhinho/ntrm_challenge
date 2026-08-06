@@ -1,94 +1,67 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { reverseGeocode, type Coordinates } from '../../api/geocoding';
-import { useGetApiV1Nutritionists } from '../../api/generated/nutritionists/nutritionists';
 import type {
   GetApiV1Nutritionists200ItemsItem,
   GetApiV1Nutritionists200ItemsItemServicesItem,
 } from '../../api/generated/models';
-import { Button } from '../../shared/ui/Button/Button';
-import { Text } from '../../shared/ui/Text/Text';
+import { useGetApiV1Nutritionists } from '../../api/generated/nutritionists/nutritionists';
+import { Button } from '../../components/shared/ui/Button/Button';
+import { Pagination } from '../../components/shared/ui/Pagination/Pagination';
+import { Text } from '../../components/shared/ui/Text/Text';
 import { AppointmentRequestModal } from '../../features/nutritionist-search/AppointmentRequestModal/AppointmentRequestModal';
+import {
+  DEFAULT_LOCATION,
+  NUTRITIONIST_PAGE_LIMIT,
+} from '../../features/nutritionist-search/constants';
 import { NutritionistCard } from '../../features/nutritionist-search/NutritionistCard/NutritionistCard';
 import { SearchField } from '../../features/nutritionist-search/SearchField/SearchField';
-import { locationOptions, searchOptions } from '../../features/nutritionist-search/search-options';
-import { Icon } from '../../shared/ui/Icon/Icon';
+import { showSuccessToast } from '../../shared/utils/toast-notifications';
+import { PageContainer } from '../../app/layout/RootLayout';
 
 type Selection = {
   nutritionist: GetApiV1Nutritionists200ItemsItem;
   service: GetApiV1Nutritionists200ItemsItemServicesItem;
 };
+
 type SubmittedSearch = {
   query: string;
   location: string;
-  coordinates?: Coordinates;
 };
 
 export function NutritionistSearchPage() {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
-  const [location, setLocation] = useState('Braga');
-  const [page, setPage] = useState(1);
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selection, setSelection] = useState<Selection>();
-  const [coordinates, setCoordinates] = useState<Coordinates>();
   const [submitted, setSubmitted] = useState<SubmittedSearch>({
     query: '',
-    location: 'Braga',
+    location: DEFAULT_LOCATION,
   });
-  const [locationStatus, setLocationStatus] = useState('');
   const results = useGetApiV1Nutritionists({
     q: submitted.query || undefined,
-    location: submitted.location || undefined,
-    latitude: submitted.coordinates?.latitude,
-    longitude: submitted.coordinates?.longitude,
-    page,
-    per_page: 1,
+    location: submitted.location,
+    page: currentPage,
+    limit: NUTRITIONIST_PAGE_LIMIT,
   });
-  const catalog = useGetApiV1Nutritionists({ page: 1, per_page: 50 });
-  const response = results.data?.data;
-  const options = searchOptions(catalog.data?.data.items);
-  const locations = locationOptions(catalog.data?.data.items);
+  const response = results.data?.status === 200 ? results.data.data : undefined;
+  const displayedLocation =
+    location === submitted.location && response?.location ? response.location : location;
 
   function search() {
-    setPage(1);
+    const normalizedLocation = displayedLocation.trim() || DEFAULT_LOCATION;
+    setCurrentPage(1);
+    setLocation(normalizedLocation);
     setSubmitted({
       query: query.trim(),
-      location: location.trim(),
-      coordinates,
+      location: normalizedLocation,
     });
-  }
-
-  function useCurrentLocation() {
-    if (!navigator.geolocation) {
-      setLocationStatus(t('search.locationUnavailable'));
-      return;
-    }
-    setLocationStatus(t('search.findingLocation'));
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        const currentCoordinates = {
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-        };
-        setCoordinates(currentCoordinates);
-        try {
-          const currentLocation = (await reverseGeocode(currentCoordinates)) ?? 'Braga';
-          setLocation(currentLocation);
-          setLocationStatus(t('search.locationSet', { location: currentLocation }));
-        } catch {
-          setLocation(t('search.currentLocation'));
-          setLocationStatus(t('search.locationCoordinatesReady'));
-        }
-      },
-      () => setLocationStatus(t('search.locationDenied')),
-    );
   }
 
   return (
     <div className="bg-page">
       <section className="bg-primary pb-7 pt-2">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <PageContainer>
           <section aria-label={t('search.searchLabel')} className="mt-5">
             <form
               className="grid gap-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_auto] sm:items-end"
@@ -102,34 +75,28 @@ export function NutritionistSearchPage() {
                 value={query}
                 onChange={setQuery}
                 onEnter={search}
+                label={t('search.nameOrService')}
                 placeholder={t('search.nameOrServicePlaceholder')}
-                options={options}
               />
               <SearchField
                 id="nutritionist-location"
-                value={location}
-                onChange={(value) => {
-                  setLocation(value);
-                  setCoordinates(undefined);
-                  setLocationStatus('');
-                }}
+                value={displayedLocation}
+                onChange={setLocation}
                 onEnter={search}
+                label={t('search.location')}
                 placeholder={t('search.locationPlaceholder')}
-                options={locations}
-                selectionOnly
-                onUseCurrentLocation={useCurrentLocation}
-                locationStatus={locationStatus}
+                options={response?.locations ?? []}
               />
               <div className="flex gap-2">
-                <Button type="submit" variant="search" className="flex-1 sm:flex-none px-10">
+                <Button type="submit" variant="search" className="flex-1 px-10 sm:flex-none">
                   {t('common.search')}
                 </Button>
               </div>
             </form>
           </section>
-        </div>
+        </PageContainer>
       </section>
-      <div className="mx-auto w-full max-w-6xl px-4 py-0 sm:px-6 lg:px-8">
+      <PageContainer className="py-0">
         {results.isLoading && (
           <Text className="mt-2" tone="muted" role="status">
             {t('search.loading')}
@@ -158,57 +125,27 @@ export function NutritionistSearchPage() {
                   <NutritionistCard
                     key={nutritionist.id}
                     nutritionist={nutritionist}
-                    onSchedule={(service) => {
-                      setSelection({
-                        nutritionist,
-                        service,
-                      });
-                    }}
+                    onSchedule={(service) => setSelection({ nutritionist, service })}
                   />
                 ))}
               </div>
             )}
-            <nav
-              aria-label={t('search.resultsPages')}
-              className="mt-6 flex items-start justify-start"
-            >
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-8 w-8 p-0 border-none rounded-none rounded-l-sm shadow-none"
-                aria-label={t('common.previous')}
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-              >
-                <Icon name="chevron-left" width={13} height={13} strokeWidth={1.75} />
-              </Button>
-              {Array.from(
-                { length: Math.max(response.meta.total_pages, 1) },
-                (_, index) => index + 1,
-              ).map((pageNumber) => (
-                <Button
-                  key={pageNumber}
-                  size="sm"
-                  variant={pageNumber === page ? 'soft' : 'secondary'}
-                  className="h-8 w-8 p-0 text-xs border-none rounded-none shadow-none"
-                  aria-label={`${t('search.resultsPages')} ${pageNumber}`}
-                  aria-current={pageNumber === page ? 'page' : undefined}
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </Button>
-              ))}
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-8 w-8 p-0 border-none rounded-none rounded-r-sm shadow-none"
-                aria-label={t('common.next')}
-                onClick={() => setPage(page + 1)}
-                disabled={page >= response.meta.total_pages}
-              >
-                <Icon name="chevron-right" width={13} height={13} strokeWidth={1.75} />
-              </Button>
-            </nav>
+            {response.page_info.total_count > 0 && (
+              <Pagination
+                className="mt-6 justify-start"
+                label={t('search.resultsPagination')}
+                currentPage={currentPage}
+                hasPreviousPage={response.page_info.has_previous_page && !results.isFetching}
+                pages={Array.from(
+                  { length: response.page_info.total_pages },
+                  (_, index) => index + 1,
+                )}
+                hasNextPage={response.page_info.has_next_page && !results.isFetching}
+                onPageChange={(page) => {
+                  if (!results.isFetching) setCurrentPage(page);
+                }}
+              />
+            )}
           </>
         )}
         {selection && (
@@ -216,10 +153,13 @@ export function NutritionistSearchPage() {
             nutritionistName={selection.nutritionist.name}
             service={selection.service}
             onClose={() => setSelection(undefined)}
-            onSuccess={() => toast.success(t('appointment.success'))}
+            onSuccess={() => {
+              setCurrentPage(1);
+              showSuccessToast(t('appointment.success'));
+            }}
           />
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { GetApiV1NutritionistsNutritionistIdAppointmentRequests200ItemsItem } from '../../../api/generated/models';
-import { Button } from '../../../shared/ui/Button/Button';
+import type { GetApiV1AppointmentRequests200DataItem } from '../../../api/generated/models';
+import { Button } from '../../../components/shared/ui/Button/Button';
 import {
   Dialog,
   DialogClose,
@@ -10,11 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../../shared/ui/Dialog/Dialog';
-import { Icon } from '../../../shared/ui/Icon/Icon';
-import { Image } from '../../../shared/ui/Image/Image';
-import { Text } from '../../../shared/ui/Text/Text';
-import { formatDateTime, formatTime } from '../../../shared/utils/utils';
+} from '../../../components/shared/ui/Dialog/Dialog';
+import { Icon, type IconName } from '../../../components/shared/ui/Icon/Icon';
+import { Image } from '../../../components/shared/ui/Image/Image';
+import { Text } from '../../../components/shared/ui/Text/Text';
+import { formatDateTime, formatTime } from '../appointment-date-formatters';
 import { useTranslation } from 'react-i18next';
 import appointmentHeader from '../../../shared/assets/appointment_header.png';
 
@@ -25,7 +25,7 @@ export function AppointmentCard({
   onAccept,
   onReject,
 }: {
-  request: GetApiV1NutritionistsNutritionistIdAppointmentRequests200ItemsItem;
+  request: GetApiV1AppointmentRequests200DataItem;
   accepting: boolean;
   rejecting: boolean;
   onAccept: () => void;
@@ -53,6 +53,9 @@ export function AppointmentCard({
           </Text>
           <Text size="xs" className="mt-0.5 truncate leading-4">
             {request.service.name}
+          </Text>
+          <Text size="xs" tone="muted" className="mt-0.5 truncate leading-4">
+            {request.nutritionist.name}
           </Text>
           <Text as="span" tone="muted" size="xs" className="mt-2 flex items-center gap-2 leading-4">
             <span className="grid size-6 shrink-0 place-items-center rounded-control bg-primary-soft text-primary-text">
@@ -136,28 +139,37 @@ export function AppointmentCard({
             </DialogContent>
           </Dialog>
         ) : (
-          <div className="inline-flex items-center gap-2">
-            <span className="grid size-6 place-items-center rounded-control bg-primary-soft text-primary-text">
-              <Icon
-                name={request.status === 'accepted' ? 'circle-check' : 'circle-x'}
-                width={14}
-                height={14}
-                strokeWidth={1.8}
-              />
-            </span>
-            <Text
-              as="span"
-              size="xs"
-              weight="medium"
-              tone={request.status === 'accepted' ? 'success' : 'danger'}
-            >
-              {request.status === 'accepted'
-                ? t('requests.acceptedStatus')
-                : t('requests.rejectedStatus')}
-            </Text>
-          </div>
+          (() => {
+            const status = statusPresentation(request.status, t);
+            return (
+              <div className="inline-flex items-center gap-2">
+                <span className="grid size-6 place-items-center rounded-control bg-primary-soft text-primary-text">
+                  <Icon name={status.icon} width={14} height={14} strokeWidth={1.8} />
+                </span>
+                <Text as="span" size="xs" weight="medium" tone={status.tone}>
+                  {status.label}
+                </Text>
+              </div>
+            );
+          })()
         )}
       </div>
     </article>
   );
+}
+
+function statusPresentation(
+  status: GetApiV1AppointmentRequests200DataItem['status'],
+  t: (key: string) => string,
+): { icon: IconName; tone: 'success' | 'danger' | 'muted'; label: string } {
+  switch (status) {
+    case 'accepted':
+      return { icon: 'circle-check', tone: 'success', label: t('requests.acceptedStatus') };
+    case 'rejected':
+      return { icon: 'circle-x', tone: 'danger', label: t('requests.rejectedStatus') };
+    case 'superseded':
+      return { icon: 'circle-x', tone: 'muted', label: t('requests.supersededStatus') };
+    case 'pending':
+      return { icon: 'clock', tone: 'muted', label: t('requests.pending') };
+  }
 }

@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SearchField } from './SearchField';
 
@@ -115,30 +116,77 @@ describe('SearchField', () => {
     expect(onEnter).toHaveBeenCalledOnce();
   });
 
-  it('only changes the value after selecting a suggestion', async () => {
+  it('allows arbitrary text when options are omitted and does not render a popover', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
+    const onEnter = vi.fn();
+    function ControlledSearchField() {
+      const [value, setValue] = useState('Braga');
+      return (
+        <SearchField
+          id="location"
+          label="Location"
+          value={value}
+          placeholder="Location"
+          onChange={(nextValue) => {
+            onChange(nextValue);
+            setValue(nextValue);
+          }}
+          onEnter={onEnter}
+        />
+      );
+    }
+
+    render(<ControlledSearchField />);
+
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'Unknown');
+    await user.keyboard('{Enter}');
+
+    expect(onChange).toHaveBeenLastCalledWith('Unknown');
+    expect(onEnter).toHaveBeenCalledOnce();
+    expect(input).toHaveValue('Unknown');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('always renders the controlled value', async () => {
+    const user = userEvent.setup();
+    const props = {
+      id: 'location',
+      label: 'Location',
+      placeholder: 'Location',
+      onChange: vi.fn(),
+    };
+    const { rerender } = render(<SearchField {...props} value="Braga" />);
+    const input = screen.getByRole('textbox');
+    await user.type(input, 'Lisbon');
+    expect(props.onChange).toHaveBeenCalled();
+    expect(input).toHaveValue('Braga');
+
+    rerender(<SearchField {...props} value="Porto" />);
+    expect(input).toHaveValue('Porto');
+  });
+
+  it('does not select or crash when keyboard navigation has no matching options', async () => {
+    const user = userEvent.setup();
     const onEnter = vi.fn();
     render(
       <SearchField
         id="location"
         label="Location"
-        value="Braga"
+        value="Unknown"
         placeholder="Location"
-        options={['Braga', 'Porto']}
-        onChange={onChange}
+        options={['Braga']}
+        onChange={vi.fn()}
         onEnter={onEnter}
-        selectionOnly
       />,
     );
 
     const input = screen.getByRole('combobox');
-    await user.clear(input);
-    await user.type(input, 'Unknown');
-    await user.keyboard('{Enter}');
+    await user.click(input);
+    await user.keyboard('{ArrowUp}{Enter}');
 
-    expect(onChange).not.toHaveBeenCalled();
-    expect(onEnter).not.toHaveBeenCalled();
-    expect(input).toHaveValue('Braga');
+    expect(onEnter).toHaveBeenCalledOnce();
   });
 });

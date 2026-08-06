@@ -5,141 +5,110 @@ RSpec.describe "Nutritionists API", type: :request do
     get "Search nutritionists and services" do
       tags "Nutritionists"
       produces "application/json"
-
       parameter name: :q, in: :query, required: false, schema: { type: :string }
       parameter name: :location, in: :query, required: false, schema: { type: :string }
-      parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1 }
-      parameter name: :per_page, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 50 }
-      parameter name: :latitude, in: :query, required: false, schema: { type: :number, minimum: -90, maximum: 90 }
-      parameter name: :longitude, in: :query, required: false, schema: { type: :number, minimum: -180, maximum: 180 }
+      parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1, default: 1 }
+      parameter name: :limit, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 100, default: 20 }
 
       response "200", "matching nutritionists" do
         let!(:nutritionist) { create(:nutritionist, name: "Dr. Braga", gender: "female") }
         let!(:service) { create(:service, nutritionist: nutritionist, name: "Nutrition consultation", location: "Braga") }
         let(:q) { "consultation" }
-        let(:location) { "Braga" }
+        let(:location) { "braga" }
+        let(:limit) { 20 }
 
-        let(:page) { 1 }
-        let(:per_page) { 9 }
-
-        schema type: :object, required: %w[items meta], properties: {
-          items: {
-            type: :array,
-            items: {
-              type: :object,
-              required: %w[id name services],
-              properties: {
-                id: { type: :integer },
-                name: { type: :string },
-                biography: { type: :string, nullable: true },
-                gender: { type: :string, nullable: true },
-                distance_km: { type: :number, nullable: true },
-                services: {
-                  type: :array,
-                  items: {
-                    type: :object,
-                    required: %w[id name price_cents duration_minutes location],
-                    properties: {
-                      id: { type: :integer },
-                      name: { type: :string },
-                      price_cents: { type: :integer },
-                      duration_minutes: { type: :integer },
-                      location: { type: :string },
-                      latitude: { type: :number, nullable: true },
-                      longitude: { type: :number, nullable: true }
-                    }
-                  }
+        schema type: :object, required: %w[items page_info location locations], properties: {
+          items: { type: :array, items: {
+            type: :object, required: %w[id name services], properties: {
+              id: { type: :integer }, name: { type: :string }, biography: { type: :string, nullable: true },
+              gender: { type: :string, nullable: true },
+              services: { type: :array, items: {
+                type: :object, required: %w[id name price_cents duration_minutes location], properties: {
+                  id: { type: :integer }, name: { type: :string }, price_cents: { type: :integer },
+                  duration_minutes: { type: :integer }, location: { type: :string }
                 }
-              }
+              } }
             }
-          },
-          meta: {
-            type: :object,
-            required: %w[page per_page total_count total_pages location location_mode],
-            properties: {
-              page: { type: :integer }, per_page: { type: :integer }, total_count: { type: :integer },
-              total_pages: { type: :integer }, location: { type: :string, nullable: true }, location_mode: { type: :string, enum: %w[all exact nearest] }
-            }
-          }
+          } },
+          page_info: { type: :object, required: %w[current_page page_size total_count total_pages has_next_page has_previous_page], properties: {
+            current_page: { type: :integer }, page_size: { type: :integer }, total_count: { type: :integer },
+            total_pages: { type: :integer }, has_next_page: { type: :boolean }, has_previous_page: { type: :boolean }
+          } }, location: { type: :string },
+          locations: { type: :array, items: { type: :string } }
         }
-
-        run_test! do |response|
-          expect(JSON.parse(response.body).dig("items", 0, "gender")).to eq("female")
-        end
-      end
-
-      response "200", "defaults to Braga when location is absent" do
-        let!(:braga_nutritionist) { create(:nutritionist, name: "Braga Nutritionist") }
-        let!(:braga_service) { create(:service, nutritionist: braga_nutritionist, location: "Braga") }
-        let!(:other_nutritionist) { create(:nutritionist, name: "Porto Nutritionist") }
-        let!(:other_service) { create(:service, nutritionist: other_nutritionist, location: "Porto") }
-        let(:q) { nil }
-        let(:location) { nil }
-
-        let(:page) { 1 }
-        let(:per_page) { 9 }
-        schema type: :object, required: %w[items meta]
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["items"].map { |nutritionist| nutritionist["id"] }).to eq([braga_nutritionist.id])
-          expect(body.dig("meta", "location")).to eq("Braga")
-          expect(body.dig("meta", "location_mode")).to eq("exact")
+          expect(body.dig("items", 0, "gender")).to eq("female")
+          expect(body["location"]).to eq("Braga")
+          expect(body["locations"]).to include("Braga")
         end
       end
+    end
+  end
 
-      response "200", "defaults to Braga for an invalid location" do
-        let!(:braga_nutritionist) { create(:nutritionist, name: "Braga Nutritionist") }
-        let!(:braga_service) { create(:service, nutritionist: braga_nutritionist, location: "Braga") }
-        let!(:other_nutritionist) { create(:nutritionist, name: "Porto Nutritionist") }
-        let!(:other_service) { create(:service, nutritionist: other_nutritionist, location: "Porto") }
-        let(:q) { nil }
-        let(:location) { "Unknown" }
+  describe "GET /api/v1/nutritionists" do
+    it "uses Braga when location is absent or not an exact canonical location" do
+      braga = create(:nutritionist)
+      create(:service, nutritionist: braga, location: "Braga")
+      porto = create(:nutritionist)
+      create(:service, nutritionist: porto, location: "Porto")
 
-        schema type: :object, required: %w[items meta]
-        run_test! do |response|
-          body = JSON.parse(response.body)
-          expect(body["items"].map { |nutritionist| nutritionist["id"] }).to eq([braga_nutritionist.id])
-          expect(body.dig("meta", "location")).to eq("Braga")
-          expect(body.dig("meta", "location_mode")).to eq("exact")
-        end
+      [ nil, "Unknown" ].each do |location|
+        get "/api/v1/nutritionists", params: { location: location }
+        body = JSON.parse(response.body)
+        expect(body["items"].pluck("id")).to eq([ braga.id ])
+        expect(body["location"]).to eq("Braga")
       end
+    end
 
-      response "200", "paginates results" do
-        let!(:nutritionists) { create_list(:nutritionist, 2) }
-        let!(:services) { nutritionists.map { |nutritionist| create(:service, nutritionist: nutritionist, location: "Braga") } }
-        let(:q) { nil }
-        let(:location) { "Braga" }
-        let(:page) { 2 }
-        let(:per_page) { 1 }
+    it "matches canonical locations case-insensitively" do
+      upper = create(:nutritionist)
+      lower = create(:nutritionist)
+      create(:service, nutritionist: upper, location: "Braga")
+      create(:service, nutritionist: lower, location: "braga")
 
-        schema type: :object
-        run_test! do |response|
-          body = JSON.parse(response.body)
-          expect(body["items"].length).to eq(1)
-          expect(body.dig("meta", "total_pages")).to eq(2)
-        end
+      get "/api/v1/nutritionists", params: { location: "BRAGA" }
+
+      body = JSON.parse(response.body)
+      expect(body["items"].pluck("id")).to contain_exactly(upper.id, lower.id)
+      expect(body["locations"].count { |location| location.casecmp?("Braga") }).to eq(1)
+      expect(body["locations"]).to include(body["location"])
+    end
+
+    it "paginates by lower-case name and id with direct pages" do
+      nutritionists = %w[alpha Alpha beta].map do |name|
+        create(:nutritionist, name: name).tap { |record| create(:service, nutritionist: record, location: "Braga") }
       end
+      expected_ids = nutritionists.sort_by { |record| [ record.name.downcase, record.id ] }.map(&:id)
 
-      response "200", "orders by nearest coordinates" do
-        let!(:near_nutritionist) { create(:nutritionist, name: "Near") }
-        let!(:near_service) { create(:service, nutritionist: near_nutritionist, location: "Near", latitude: 41.55, longitude: -8.43) }
-        let!(:far_nutritionist) { create(:nutritionist, name: "Far") }
-        let!(:far_service) { create(:service, nutritionist: far_nutritionist, location: "Far", latitude: 41.20, longitude: -8.60) }
-        let(:q) { nil }
-        let(:location) { nil }
-        let(:latitude) { 41.54 }
-        let(:longitude) { -8.42 }
-        let(:page) { 1 }
-        let(:per_page) { 9 }
+      get "/api/v1/nutritionists", params: { page: 1, limit: 2 }
+      first_page = JSON.parse(response.body)
+      get "/api/v1/nutritionists", params: { page: 2, limit: 2 }
 
-        schema type: :object
-        run_test! do |response|
-          body = JSON.parse(response.body)
-          expect(body.dig("items", 0, "id")).to eq(near_nutritionist.id)
-          expect(body.dig("items", 0, "distance_km")).to be_a(Numeric)
-          expect(body.dig("meta", "location_mode")).to eq("nearest")
-        end
-      end
+      expect(first_page["items"].pluck("id") + JSON.parse(response.body)["items"].pluck("id")).to eq(expected_ids)
+    end
+
+    it "applies pagination after the current filter" do
+      nutritionist = create(:nutritionist, name: "Alpha")
+      create(:service, nutritionist:, location: "Porto")
+      braga = create(:nutritionist, name: "Zulu")
+      create(:service, nutritionist: braga, location: "Braga")
+
+      get "/api/v1/nutritionists", params: { page: 1, location: "Braga" }
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["items"].pluck("id")).to include(braga.id)
+    end
+
+    it "returns all page metadata on the first response" do
+      create_list(:nutritionist, 3).each { |record| create(:service, nutritionist: record, location: "Braga") }
+
+      get "/api/v1/nutritionists", params: { page: 1, limit: 1 }
+      body = JSON.parse(response.body)
+
+      expect(body.dig("page_info", "total_count")).to eq(3)
+      expect(body.dig("page_info", "total_pages")).to eq(3)
+      expect(body.dig("page_info", "has_next_page")).to be(true)
+      expect(body.dig("page_info", "has_previous_page")).to be(false)
     end
   end
 end

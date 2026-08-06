@@ -1,12 +1,13 @@
 import { Link } from '@tanstack/react-router';
-import { LanguageSwitcher } from '../../shared/ui/LanguageSwitcher/LanguageSwitcher';
-import { useTranslation } from 'react-i18next';
-import { Icon } from '../../shared/ui/Icon/Icon';
-import { Image } from '../../shared/ui/Image/Image';
+import { LanguageSwitcher } from '../../components/shared/ui/LanguageSwitcher/LanguageSwitcher';
+import { Image } from '../../components/shared/ui/Image/Image';
+import { Icon } from '../../components/shared/ui/Icon/Icon';
 import logo from '../../shared/assets/logo_nutrium_white.png';
+import { useTranslation } from 'react-i18next';
 
 export function Header() {
   const { t } = useTranslation();
+
   return (
     <header className="bg-primary opacity-90">
       <div className="mx-auto flex h-11 w-full max-w-6xl items-center justify-between px-4 sm:h-12 sm:px-6 lg:px-8">
@@ -16,12 +17,11 @@ export function Header() {
           </Link>
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-3">
-          <a
-            href="#"
+          <Link
+            to="/appointments"
             className="group hidden items-center gap-1.5 rounded-sm text-on-primary/80 hover:text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-border focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:inline-flex"
-            onClick={(event) => event.preventDefault()}
           >
-            <span className="text-sm text-on-primary/90">{t('common.professionalIntro')}</span>
+            <span className="text-sm text-on-primary/90">{t('common.professionalIntro')}</span>{' '}
             <span className="text-sm font-medium text-on-primary/90">
               {t('common.professionalCta')}
             </span>
@@ -32,7 +32,7 @@ export function Header() {
               strokeWidth={1.75}
               className="transition-transform group-hover:translate-x-0.5"
             />
-          </a>
+          </Link>
           <LanguageSwitcher />
         </div>
       </div>

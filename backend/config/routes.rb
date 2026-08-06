@@ -11,11 +11,9 @@ Rails.application.routes.draw do
   # root "posts#index"
   namespace :api do
     namespace :v1 do
-      resources :nutritionists, only: [ :index ] do
-        resources :appointment_requests, only: [ :index ]
-      end
+      resources :nutritionists, only: [ :index ]
 
-      resources :appointment_requests, only: [ :create ] do
+      resources :appointment_requests, only: [ :index, :create ] do
         member do
           patch :accept
           patch :reject
