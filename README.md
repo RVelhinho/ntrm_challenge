@@ -17,7 +17,8 @@ not install dependencies from `frontend/` or add another lockfile.
 
 ## Setup
 
-Start PostgreSQL, then run from the repository root:
+Start PostgreSQL and ensure your local PostgreSQL user can create databases,
+then run from the repository root:
 
 ```bash
 pnpm setup
@@ -25,11 +26,26 @@ cd backend && bin/rails db:seed && cd ..
 ```
 
 Rails defaults to the local `nutrium_development` and `nutrium_test` databases.
-If local PostgreSQL requires an explicit connection, export it before running
-Rails commands; `.env` files are not loaded by the backend:
+If local PostgreSQL requires an explicit connection, prefer PostgreSQL's
+connection variables so Rails can keep using separate development and test
+databases. `.env` files are not loaded by the backend:
+
+```bash
+export PGHOST=localhost
+export PGPORT=5432
+export PGUSER=user
+export PGPASSWORD=password
+```
+
+Alternatively, `DATABASE_URL` can be used, but it applies to the Rails process
+in every environment. Use a development database URL for setup and development,
+and switch it to the test database before running API tests:
 
 ```bash
 export DATABASE_URL=postgresql://user:password@localhost/nutrium_development
+# ...run setup and development commands...
+export DATABASE_URL=postgresql://user:password@localhost/nutrium_test
+pnpm test:api
 ```
 
 Seeding is required to populate the nutritionists and services used by the demo.
@@ -70,6 +86,19 @@ pnpm test
 
 Frontend routes are `/`, `/nutritionists`, and the global request queue at
 `/appointments`. API routes are documented in `backend/README.md`.
+
+### Manual Smoke Test
+
+With both servers running, verify the main flow:
+
+1. Open <http://localhost:5173/nutritionists> and search for `Ana`.
+2. Open a service and submit an appointment request with a name, email, and
+   future date and time.
+3. Open <http://localhost:5173/appointments>, open the new request, and accept
+   or reject it. Authentication is intentionally out of scope, so this queue is
+   available without signing in.
+4. If you accepted or rejected the request, inspect the generated message under
+   `backend/tmp/mailer`.
 
 For another API origin, copy `frontend/.env.example` to `frontend/.env` and set
 `VITE_API_URL`. Production builds default to same-origin requests when this
