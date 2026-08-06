@@ -1,0 +1,5 @@
+<%= t("appointment_request_mailer.greeting", name: @appointment_request.guest.name) %>
+
+<%= t("appointment_request_mailer.rejected.body", nutritionist: @appointment_request.nutritionist.name, service: @appointment_request.service.name) %>
+
+<%= t("appointment_request_mailer.details", starts_at: l(@appointment_request.starts_at), location: @appointment_request.service.location) %>
