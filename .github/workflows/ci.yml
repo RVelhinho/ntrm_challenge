@@ -31,7 +31,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nutrium_test
       RAILS_ENV: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
@@ -45,7 +45,7 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
@@ -79,7 +79,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nutrium_test
       RAILS_ENV: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
